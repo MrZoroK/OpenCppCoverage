@@ -51,7 +51,7 @@ jobs:
         run: msbuild /p:Configuration=Release OpenCppCoverage.wixproj
 
       - name: Archive artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: MSI
           path: bin/Release/OpenCppCoverage.msi
