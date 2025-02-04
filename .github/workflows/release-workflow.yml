@@ -1,9 +1,9 @@
-name: Unit tests
-on: [push, pull_request,workflow_dispatch]
+name: Release build
+on: [workflow_dispatch]
 
 jobs:
   build:
-    name: Unit tests
+    name: Release build
     runs-on: windows-2022
     steps:
       - name: Delete components
@@ -35,7 +35,6 @@ jobs:
                 # should be run twice
                 $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
                 $process = Start-Process -FilePath cmd.exe -ArgumentList $Arguments -Wait -PassThru -WindowStyle Hidden
-
       - name: Checkout
         uses: actions/checkout@v4
 
@@ -46,22 +45,14 @@ jobs:
         uses: microsoft/setup-msbuild@v2
 
       - name: Build solution
-        run: msbuild /m CppCoverage.sln /p:Configuration=Debug /p:Platform=x64
+        run: msbuild /m CppCoverage.sln /p:Configuration=Release /p:Platform=x64
 
-      - name: Run CppCoverageTest
-        run: .\x64\Debug\CppCoverageTest.exe --gtest_filter=-CodeCoverageRunnerTest.OptimizedBuild # Require VS2013
+      - name: Build MSI
+        run: msbuild /p:Configuration=Release OpenCppCoverage.wixproj
 
-      - name: Run ExporterTest
-        run: .\x64\Debug\ExporterTest.exe
-
-      - name: Run FileFilterTest
-        run: .\x64\Debug\FileFilterTest.exe --gtest_filter=-RelocationsExtractorTest.Extract # Require mspdbcore.dll
-
-      - name: Run OpenCppCoverageTest
-        run: .\x64\Debug\OpenCppCoverageTest.exe
-
-      - name: Run PluginTest
-        run: .\x64\Debug\PluginTest.exe
-
-      - name: Run ToolsTest
-        run: .\x64\Debug\ToolsTest.exe
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: MSI
+          path: bin/Release/OpenCppCoverage.msi
+            
